@@ -30,13 +30,6 @@ CREATE TABLE `egts_repl` (
   CONSTRAINT `egts_repl_relay2addr_fk` FOREIGN KEY (`relay2addr`) REFERENCES `egts_repl_endpoints` (`id`)
 ) ENGINE=InnoDB;
 
-CREATE USER 'egtsrelay'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*793DE35932225778FCC3BB264FEDA72369717BE4';
-GRANT USAGE ON *.* TO 'egtsrelay'@'%';
-GRANT SELECT ON `gmng`.`dev_info` TO 'egtsrelay'@'%';
-GRANT SELECT, UPDATE ON `gmng`.`wips_repl` TO 'egtsrelay'@'%';
-GRANT SELECT ON `gmng`.`wips_repl_endpoints` TO 'egtsrelay'@'%';
-GRANT SELECT ON `gmng`.`nav_data` TO 'egtsrelay'@'%';
-
 CREATE TABLE `wips_repl_endpoints` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `endpoint_addr` varchar(255) NOT NULL,
@@ -61,11 +54,17 @@ CREATE TABLE `wips_repl` (
   CONSTRAINT `wips_repl_relay2addr_fk` FOREIGN KEY (`relay2addr`) REFERENCES `wips_repl_endpoints` (`id`)
 ) ENGINE=InnoDB;
 
-CREATE USER 'wipsrelay'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*D413FAF3703F59A28CDDD580D4D29B3F06403A84'
+CREATE USER 'egtsrelay'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*793DE35932225778FCC3BB264FEDA72369717BE4';
+GRANT USAGE ON *.* TO 'egtsrelay'@'%';
+GRANT SELECT ON `gmng`.`dev_info` TO 'egtsrelay'@'%';
+GRANT SELECT, UPDATE ON `gmng`.`egts_repl` TO 'egtsrelay'@'%';
+GRANT SELECT ON `gmng`.`egts_repl_endpoints` TO 'egtsrelay'@'%';
+GRANT SELECT ON `gmng`.`nav_data` TO 'egtsrelay'@'%';
+
+CREATE USER 'wipsrelay'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*D413FAF3703F59A28CDDD580D4D29B3F06403A84';
 GRANT USAGE ON *.* TO 'wipsrelay'@'%';
 GRANT SELECT ON `gmng`.`dev_info` TO 'wipsrelay'@'%';
 GRANT SELECT, UPDATE ON `gmng`.`wips_repl` TO 'wipsrelay'@'%';
-GRANT SELECT ON `gmng`.`relay_id_map` TO 'wipsrelay'@'%';
 GRANT SELECT ON `gmng`.`wips_repl_endpoints` TO 'wipsrelay'@'%';
 GRANT SELECT ON `gmng`.`nav_data` TO 'wipsrelay'@'%';
 
@@ -90,6 +89,9 @@ ALTER TABLE `wips_repl` ADD CONSTRAINT `wips_repl_id_map_fk` FOREIGN KEY (`id_ma
 
 GRANT SELECT ON relay_id_map to egtsrelay;
 GRANT SELECT ON relay_id_map to wipsrelay;
+
+GRANT SELECT ON `gmng`.`relay_id_map` TO 'egtsrelay'@'%';
+GRANT SELECT ON `gmng`.`relay_id_map` TO 'wipsrelay'@'%';
 
 INSERT INTO relay_schema_version(version, description) values (2, 'transient to normalize id relation');
 
@@ -192,7 +194,7 @@ CREATE TABLE `relay_out_type` (
   `type` int(11) NOT NULL AUTO_INCREMENT,
   `description` ENUM ('EGTS,WIPS') NOT NULL,  
   `mtime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`type`),
+  PRIMARY KEY (`type`)
 ) ENGINE=InnoDB;
 
-INSERT INTO `relay_schema_version` (version, description) VALUES (3, 'unify');
+INSERT INTO `relay_schema_version` (version, description) VALUES (4, 'unify');
