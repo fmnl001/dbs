@@ -187,6 +187,59 @@ create table egts_repl_config (
   `skip_auth` TINYINT(1) default 0,
    CONSTRAINT `egts_repl_config_id_fk` FOREIGN KEY (`id`) REFERENCES `egts_repl` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+
+-- Audit trxs for table egts_repl_endpoints
+DROP TRIGGER IF EXISTS `egts_repl_endpoints_after_insert_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_endpoints_after_insert_trx` AFTER INSERT ON `egts_repl_endpoints` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'insert', 'egts_repl',
+	 CONCAT('add replication endpoint: endpoint_addr=',NEW.endpoint_addr,', endpoint_port=',NEW.endpoint_port,', description=',NEW.description));
+END $$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `egts_repl_endpoints_after_update_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_endpoints_after_update_trx` AFTER UPDATE ON `egts_repl_endpoints` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'update', 'egts_repl',
+	 CONCAT('update replication endpoint: old endpoint_addr=',OLD.endpoint_addr,', new endpoint_addr=',NEW.endpoint_addr,', old endpoint_port=',OLD.endpoint_port,', new endpoint_port=',NEW.endpoint_port,', old description=',OLD.description,', new description=',NEW.description));
+END $$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `egts_repl_endpoints_after_delete_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_endpoints_after_delete_trx` AFTER DELETE ON `egts_repl_endpoints` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'delete', 'egts_repl',
+	 CONCAT('delete replication endpoint: endpoint_addr=',OLD.endpoint_addr,', endpoint_port=',OLD.endpoint_port,', description=',OLD.description));
+END $$
+DELIMITER ;
+
+-- Audit trxs for table egts_repl
+DROP TRIGGER IF EXISTS `egts_repl_after_insert_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_after_insert_trx` AFTER INSERT ON `egts_repl` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'insert', 'egts_repl',
+	 CONCAT('add replication object: id4relay=',NEW.id4relay,', id2relay=',NEW.id2relay,', relay2addr=',NEW.relay2addr,', relay_position=',NEW.relay_position,', active=',NEW.active));
+END $$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `egts_repl_after_update_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_after_update_trx` AFTER UPDATE ON `egts_repl` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'update', 'egts_repl',
+	 CONCAT('update replication object: old id4relay=',OLD.id4relay,', new id4relay=',NEW.id4relay,', old id2relay=',OLD.id2relay,', new id2relay=',NEW.id2relay,', old relay2addr=',OLD.relay2addr,', new relay2addr=',NEW.relay2addr,', old relay_position=',OLD.relay_position,', new relay_position=',NEW.relay_position,', old active=',OLD.active,', new active=',NEW.active));
+END $$
+DELIMITER ;
+DROP TRIGGER IF EXISTS `egts_repl_after_delete_trx`;
+DELIMITER $$
+CREATE TRIGGER `egts_repl_after_delete_trx` AFTER DELETE ON `egts_repl` FOR EACH ROW BEGIN
+  INSERT INTO audit_log (`login`, `action`, `affected_table`, `comment`)
+  VALUES (USER(), 'delete', 'egts_repl',
+	 CONCAT('delete replication object: id4relay=',OLD.id4relay,', id2relay=',OLD.id2relay,', relay2addr=',OLD.relay2addr,', relay_position=',OLD.relay_position,', active=',OLD.active));
+END $$
+DELIMITER ;
+
 INSERT INTO `relay_schema_version` (version, description) VALUES (3, 'normalized id relation');
 
 -- v.4 Unified
