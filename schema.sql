@@ -175,8 +175,8 @@ end if;
 end $$
 delimiter ;
 
-alter table `egts_repl` modify column `mtime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-alter table `wips_repl` modify column `mtime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+alter table `egts_repl` modify column `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+alter table `wips_repl` modify column `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
 alter table egts_repl_endpoints add skip_auth TINYINT(1) AFTER endpoint_port;
 alter table egts_repl_endpoints add  column `mtime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER skip_auth;
