@@ -1269,10 +1269,19 @@ INSERT INTO `db_info`(version) VALUES (11);
 
 COMMIT;
 
+-- *****************************************************************************
+--
+-- GMNG v12
+--
+-- *****************************************************************************
+START TRANSACTION;
+ALTER event gmng_cleanup_evt ON SCHEDULE EVERY 1 DAY STARTS '2022-03-24 00:00:00' DISABLE ON slave
+INSERT INTO `db_info`(version) VALUES (12);
+COMMIT;
 
 -- *****************************************************************************
 --
--- GMNG v12 (MySQL 8.x and later)
+-- GMNG v13 (MySQL 8.x and later)
 --
 -- *****************************************************************************
 -- create predefined roles
