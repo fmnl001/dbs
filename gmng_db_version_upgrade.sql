@@ -1275,7 +1275,57 @@ COMMIT;
 --
 -- *****************************************************************************
 START TRANSACTION;
-ALTER event gmng_cleanup_evt ON SCHEDULE EVERY 1 DAY STARTS '2022-03-24 00:00:00' DISABLE ON slave
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `gmng_cleanup_utl`(IN retaindays INTEGER, IN rows2del INTEGER)
+    MODIFIES SQL DATA
+    SQL SECURITY INVOKER
+BEGIN
+  DECLARE row_count INTEGER;
+  DECLARE rows_deleted INTEGER;
+  DECLARE pos bigint unsigned;
+
+  SET rows_deleted = 0;
+  SET row_count = 0;
+  
+  SELECT max(rec_num) INTO pos FROM `nav_data` WHERE ADDDATE( DATE(insertion_time), INTERVAL retaindays DAY) < CURDATE();
+
+  label1: LOOP
+    DELETE FROM `nav_data` WHERE ADDDATE( DATE(nav_time), INTERVAL retaindays DAY) < CURDATE()
+    AND rec_num <= pos LIMIT rows2del;
+    IF ROW_COUNT() = 0 THEN
+      LEAVE label1;
+    END IF;
+  END LOOP label1;
+
+  label2: LOOP
+    DELETE FROM `req` WHERE ADDDATE(DATE(insertion_time), INTERVAL retaindays DAY) < CURDATE() LIMIT rows2del; 
+    IF ROW_COUNT() = 0 THEN
+      LEAVE label2;
+    END IF;
+  END LOOP label2;
+END $$
+DELIMITER ;
+
+ALTER event gmng_cleanup_evt ON SCHEDULE EVERY 1 DAY STARTS '2022-04-28 00:00:00' ENABLE DO call `gmng_cleanup_utl`(20, 300000);
+DROP PROCEDURE IF EXISTS select_data_from;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `select_data_from`(IN from_row BIGINT unsigned)
+BEGIN
+ SELECT
+   ND.* FROM nav_data ND USE INDEX (PRIMARY) 
+ JOIN
+   login_map MAP USING (dev_id)
+ WHERE
+   MAP.login=substring(user(),1,locate('@',user())-1) 
+   AND ND.rec_num>=from_row
+ ORDER BY
+   ND.rec_num
+ LIMIT
+  10000;
+END $$
+DELIMITER ;
+
 INSERT INTO `db_info`(version) VALUES (12);
 COMMIT;
 
